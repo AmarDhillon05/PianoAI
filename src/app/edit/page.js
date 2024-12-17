@@ -31,35 +31,6 @@ export default function Edit(){
 
     var bar_x = 0, bar_y = 0, bar_width = 0, bar_height = 0
 
-
-
-    // To play notes
-    const synth = new PolySynth({
-    oscillator: {
-        type: "sine", detune: 10, modulation: {
-            type: 'sawtooth'
-        }, spread: 10
-    }, 
-    voice: Synth,
-    envelope: {
-        attack: 0.02,
-        decay: 0.2,
-        sustain: 0.5,
-        release: 0.3,
-    },
-    filter: {
-        type: "lowpass",
-        frequency: 1000,
-        rolloff: -12,
-    },
-    }).toDestination();
-
-    const reverb = new Reverb({
-    decay: 2,  
-    preDelay: 0.01, 
-    }).toDestination();
-
-    synth.connect(reverb);
     
 
 
@@ -775,6 +746,37 @@ export default function Edit(){
         else{
             document.getElementById("saveStatus").style.visibility = "hidden"
         }
+
+
+        //Creating teh audio player
+        
+    // To play notes
+    const synth = new PolySynth({
+        oscillator: {
+            type: "sine", detune: 10, modulation: {
+                type: 'sawtooth'
+            }, spread: 10
+        }, 
+        voice: Synth,
+        envelope: {
+            attack: 0.02,
+            decay: 0.2,
+            sustain: 0.5,
+            release: 0.3,
+        },
+        filter: {
+            type: "lowpass",
+            frequency: 1000,
+            rolloff: -12,
+        },
+        }).toDestination();
+    
+        const reverb = new Reverb({
+        decay: 2,  
+        preDelay: 0.01, 
+        }).toDestination();
+    
+        synth.connect(reverb);
 
 
         //Making all the notes black after loading them
