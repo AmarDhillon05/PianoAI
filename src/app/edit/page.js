@@ -659,8 +659,17 @@ export default function Edit(){
             let bar = notesJSON[barIdx], barArr = []
             bar.forEach(note => {
                 if(Object.keys(note).includes("keys")){
+                    //Sometimes these keys are in the wrong format (the one for tonejs), so we fix them first
+                    let keys = note.keys
+                    for(let i = 0; i < keys.length; i ++){
+                        if(!keys[i].includes("/")){
+                            keys[i] = keys[i].toLowerCase()
+                            keys[i] = keys[i].slice(0, -1) + "/" + keys[i][keys[i].length - 1]
+                        }
+                    }
+
                     barArr.push(new StaveNote({
-                        keys : note.keys, duration : note.duration
+                        keys : keys, duration : note.duration
                     }))
                 }
                 else{
