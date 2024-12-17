@@ -1,19 +1,14 @@
 "use client"
+export const dynamic = 'force-dynamic'
+
 import Cookies from "js-cookie";
 import { StaveNote, Renderer, Stave, Formatter, Beam, Accidental } from "vexflow";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PolySynth, Reverb, Synth, Noise } from "tone"
 
 
 export default function Edit(){
-
     const router = useRouter()
-
-    //Redirecting to login if user is null
-    if(Cookies.get("user") == undefined || Cookies.get("user") == "undefined"){
-        router.push("/login")
-    }
 
     //A couple of variables
     var notes = [[
@@ -30,6 +25,8 @@ export default function Edit(){
     var lastMouseMove = false
 
     var bar_x = 0, bar_y = 0, bar_width = 0, bar_height = 0
+
+    var synth;
 
     
 
@@ -677,6 +674,13 @@ export default function Edit(){
     }
 
     useEffect(() => { 
+
+        //First rerouting
+        
+        if(Cookies.get("user") == undefined || Cookies.get("user") == "undefined"){
+            router.push("/login")
+        }
+
         //Cookies.set("title", undefined)
         //Taking away save status if edit is true
 
@@ -748,35 +752,115 @@ export default function Edit(){
         }
 
 
-        //Creating teh audio player
+
+
+        //Importing in useEffect since Tonejs can only run client-side
         
-    // To play notes
-    const synth = new PolySynth({
-        oscillator: {
-            type: "sine", detune: 10, modulation: {
-                type: 'sawtooth'
-            }, spread: 10
-        }, 
-        voice: Synth,
-        envelope: {
-            attack: 0.02,
-            decay: 0.2,
-            sustain: 0.5,
-            release: 0.3,
-        },
-        filter: {
-            type: "lowpass",
-            frequency: 1000,
-            rolloff: -12,
-        },
-        }).toDestination();
-    
-        const reverb = new Reverb({
-        decay: 2,  
-        preDelay: 0.01, 
-        }).toDestination();
-    
-        synth.connect(reverb);
+            async function add_tone_logic(){
+                const tone = await import('tone')
+            
+                // To play notes
+                synth = new tone.PolySynth({
+                    oscillator: {
+                        type: "sine", detune: 10, modulation: {
+                            type: 'sawtooth'
+                        }, spread: 10
+                    }, 
+                    voice: tone.Synth,
+                    envelope: {
+                        attack: 0.02,
+                        decay: 0.2,
+                        sustain: 0.5,
+                        release: 0.3,
+                    },
+                    filter: {
+                        type: "lowpass",
+                        frequency: 1000,
+                        rolloff: -12,
+                    },
+                    }).toDestination();
+                
+                    const reverb = new tone.Reverb({
+                    decay: 2,  
+                    preDelay: 0.01, 
+                    }).toDestination();
+                
+                    synth.connect(reverb);
+
+
+                    //Adding the button listener
+                    document.getElementById("play").addEventListener("click", (e) => {
+                        document.getElementById("playing").innerHTML = {"false" : "true", "true" : "false"}[document.getElementById("playing").innerHTML]
+                        
+                        if(document.getElementById("playing").innerHTML == "true"){
+                            e.target.innerHTML = "Pause"
+
+                            //Dict for converting duration to time interval
+                            const quarter_note_interval = 0.75
+                            const numerical_durations = {
+                                "4" : quarter_note_interval, "8" : quarter_note_interval / 2,
+                                "1" : quarter_note_interval / 4 //for 16 since taking first index
+                            }
+
+                        
+                            synth.releaseAll()
+
+                            async function play(){
+
+                                let last_keys = null
+                                
+                                for(let i = 0; i < notes.length; i ++){
+                                    
+
+                                    const bar = notes[i]
+                                    for(let j = 1; j < bar.length; j ++){
+                                        if(last_keys){
+                                            synth.triggerRelease(last_keys)
+                                        }
+                                        if(document.getElementById("playing").innerHTML == "false"){break}
+
+                                        const note = bar[j]
+                                        let keys = note.getKeys(), duration = note.getDuration()
+                                        for(let k = 0; k < keys.length; k ++){keys[k] = keys[k].replace("/", "").toUpperCase()}
+                                        duration = duration.replace("q", "4")
+
+                                        if(!duration.includes("r") && !note.isRest()){
+                                            synth.triggerAttack(keys)
+                                            last_keys = keys
+                                        }
+                                        else{
+                                            last_keys = null
+                                        }
+                                        
+                                        await new Promise(r => setTimeout(r, numerical_durations[duration[0]] * 1000))
+                                    }
+
+                                    if(i == notes.length - 1){
+                                        e.target.innerHTML = "Play"
+                                    }
+                                }
+
+                                synth.releaseAll()
+                            }
+
+                            play()
+
+                            document.getElementById("playing").innerHTML == "false"
+                        
+
+                        }
+                        else{
+                            e.target.innerHTML = "Play"
+                            
+                        }
+                    })
+            }
+
+            
+            if(typeof window !== undefined){add_tone_logic()}
+            
+
+
 
 
         //Making all the notes black after loading them
@@ -1038,72 +1122,7 @@ export default function Edit(){
                 <div id = "playing" className = "hidden">false</div>
 
                 <div id = "output_container" className = "flex flex-col bg-gray-200 w-screen h-screen px-5 py-5 overflow-auto items-left">
-                    <button id = "play" className = "scale-100 transition-all text-purple-500 hover:text-purple-300 font-bold text-left" onClick={(e) => {
-                        document.getElementById("playing").innerHTML = {"false" : "true", "true" : "false"}[document.getElementById("playing").innerHTML]
-                        
-                        if(document.getElementById("playing").innerHTML == "true"){
-                            e.target.innerHTML = "Pause"
-
-                            //Dict for converting duration to time interval
-                            const quarter_note_interval = 0.75
-                            const numerical_durations = {
-                                "4" : quarter_note_interval, "8" : quarter_note_interval / 2,
-                                "1" : quarter_note_interval / 4 //for 16 since taking first index
-                            }
-
-                        
-                            synth.releaseAll()
-
-                            async function play(){
-
-                                let last_keys = null
-                                
-                                for(let i = 0; i < notes.length; i ++){
-                                    
-
-                                    const bar = notes[i]
-                                    for(let j = 1; j < bar.length; j ++){
-                                        if(last_keys){
-                                            synth.triggerRelease(last_keys)
-                                        }
-                                        if(document.getElementById("playing").innerHTML == "false"){break}
-
-                                        const note = bar[j]
-                                        let keys = note.getKeys(), duration = note.getDuration()
-                                        for(let k = 0; k < keys.length; k ++){keys[k] = keys[k].replace("/", "").toUpperCase()}
-                                        duration = duration.replace("q", "4")
-
-                                        if(!duration.includes("r") && !note.isRest()){
-                                            synth.triggerAttack(keys)
-                                            last_keys = keys
-                                        }
-                                        else{
-                                            last_keys = null
-                                        }
-                                        
-                                        await new Promise(r => setTimeout(r, numerical_durations[duration[0]] * 1000))
-                                    }
-
-                                    if(i == notes.length - 1){
-                                        e.target.innerHTML = "Play"
-                                    }
-                                }
-
-                                synth.releaseAll()
-                            }
-
-                            play()
-
-                            document.getElementById("playing").innerHTML == "false"
-                        
-
-                        }
-                        else{
-                            e.target.innerHTML = "Play"
-                            
-                        }
-
-                    }}>Play</button>
+                    <button id = "play" className = "scale-100 transition-all text-purple-500 hover:text-purple-300 font-bold text-left" >Play</button>
 
                     <div id = "output" className = "h-screen"></div>
 
