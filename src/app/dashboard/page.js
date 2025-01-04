@@ -64,7 +64,7 @@ export default function Dashboard(){
             });
 
             if(count == 0){
-                userScoresDiv.innerHTML = "You currently have no scores"
+                document.getElementById("yourScoresInfoText").innerHTML = ""
             }
             else{document.getElementById("yourScoresInfoText").innerHTML = ""}
 
