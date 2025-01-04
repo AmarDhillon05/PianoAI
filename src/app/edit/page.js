@@ -472,6 +472,11 @@ export default function Edit(){
         //Every key-press :)
         document.body.addEventListener("keydown", (e) => {
 
+            //Always oreventing default
+            if(e.ctrlKey && e.key == "s" && edit){
+                e.preventDefault()
+            }
+
             //Preventing detecting double key presses
             if(Date.now() - last_keypress > 200){
                 //Delete Selected Note
@@ -492,15 +497,13 @@ export default function Edit(){
                     selected_note_idx = [-1, -1, -1]
                     render_staff()
                 }
-
+            
 
 
                 //Saving logic - Caches notes and saves after certain cooldowns to prevent spamming the api/dynamodb
                 //Cooldown will be a lenient 500
         
                 else if(e.ctrlKey && e.key == "s" && edit){
-                    e.preventDefault()
-
                     let notesStr = notesToJSON()
 
                     if(notesStr != Cookies.get('notes') || Cookies.get("new") == true || Cookies.get("title") != document.getElementById("title").value){
@@ -603,6 +606,8 @@ export default function Edit(){
 
                     }
                 }
+
+                
 
                 last_keypress = Date.now()
             }
