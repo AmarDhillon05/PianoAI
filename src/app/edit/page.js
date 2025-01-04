@@ -116,7 +116,7 @@ export default function Edit(){
 
     var selected_note_idx = [-1, -1, -1]
 
-    var last_keypress = 0
+    var last_keypress = Date.now()
     var last_save = 0
 
     //All the code for the click listeners
@@ -210,8 +210,7 @@ export default function Edit(){
                         }
 
                         else{
-                            console.log(keys)
-                            console.log(target_note)
+                            
                             //In case of chords, use target_note (if target_note was actually selected)
                             let idx = keys.indexOf(target_note)
                             if(idx != -1){
@@ -242,7 +241,7 @@ export default function Edit(){
                         }
                         //Replace
                         else{
-                            console.log(temp.src.replace(".png", "").split("/").at(-1).trim())
+                           
                             if(duration.includes("r")){
                                 notes[i][j + 1] = new StaveNote(
                                     {keys: ["b/4"], duration : duration}
@@ -472,7 +471,7 @@ export default function Edit(){
         //Every key-press :)
         document.body.addEventListener("keydown", (e) => {
 
-            //Always oreventing default
+            //Always preventing page default
             if(e.ctrlKey && e.key == "s" && edit){
                 e.preventDefault()
             }
@@ -498,11 +497,7 @@ export default function Edit(){
                     render_staff()
                 }
             
-
-
-                //Saving logic - Caches notes and saves after certain cooldowns to prevent spamming the api/dynamodb
-                //Cooldown will be a lenient 500
-        
+                //Saving logic - Caches notes and saves after certain cooldowns to prevent spamming db   
                 else if(e.ctrlKey && e.key == "s" && edit){
                     let notesStr = notesToJSON()
 
@@ -546,7 +541,7 @@ export default function Edit(){
 
 
                         if(!current_note.includes("r")){
-                            console.log(current_note)
+                         
                             //Handling up or down
                             let current_raw = current_note.split("/")[0][0] + "/" + current_note.split("/")[1]
                             let idx = note_codes.indexOf(current_raw)
@@ -558,14 +553,14 @@ export default function Edit(){
                             }
 
                             else if(e.key == "ArrowDown" && idx != 0){  
-                                console.log("Moving down: " + current_note)
+                                
                                 if(current_note.includes("#")){current_note = current_note.replace("#", "")}
                                 else if(current_note[1] == "b"){current_note = note_codes[idx - 1]}
                                 else{current_note = current_note[0] + "b/" + current_note.split("/")[1];}
-                                console.log("After moving down: " + current_note)
+                                
                             }
 
-                            console.log(current_note)
+                            
 
                             //Turning fb into e, e# into f, b# into c, and cb into b
                             let no_accidental_cases = {"fb" : "e", "e#" : "f", "b#" : "c", "cb" : "b"}
@@ -607,10 +602,17 @@ export default function Edit(){
                     }
                 }
 
-                
+            }
 
+            let setLastKeyp = true
+            if(e.ctrlKey){
+                setLastKeyp = e.key == "s"
+            }
+
+            if(setLastKeyp){
                 last_keypress = Date.now()
             }
+         
         })
 
 
@@ -701,7 +703,6 @@ export default function Edit(){
         //Updating the data of our score if it isn't a new one
         
         //Setting the title to Untitled until we save it, and not editing the default notes
-        console.log(Cookies.get("new"), Cookies.get("title"), Cookies.get("notes"))
         if(Cookies.get("new") == true || Cookies.get("new") == 'true' || Cookies.get("title") == undefined){
             document.getElementById("title").value = "Untitled"
             Cookies.set("author", Cookies.get("user"))
@@ -721,7 +722,6 @@ export default function Edit(){
             .then((data) => {
                 data.json().then(scoreInfo => {
                     //Parsing notes to correct them 
-                    console.log(scoreInfo)
                     let notesJson = JSON.parse(scoreInfo.notes.S)
                     updateNotesFromJSON(notesJson)
 
