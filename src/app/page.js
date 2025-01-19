@@ -59,7 +59,7 @@ export default function Home() {
             <span className = "text-purple-400"> Tone.js</span>, storge handled with 
             <span className = "text-purple-400"> DynamoDB</span>, and the generative model being 
             a <span className = "text-purple-400">PyTorch </span> model trained from the MIDI Maestro dataset.</p>
-            <img src = "icon2.png" className = "py-4 scale-110 scale-90"></img>
+            <img src = "newIcon2.png" className = "py-4 scale-110 scale-90"></img>
           </div>
 
 
