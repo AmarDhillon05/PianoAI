@@ -1104,23 +1104,26 @@ export default function Edit(){
                             //Current API is very simple and only generates sequential notes
                             fetch("/api/generate", {method : "POST", body: JSON.stringify({'notes' : notes_array})})
                             .then(data => data.json().then(resp => {
-                                Object.values(resp).forEach(note => {
-                                    let keys = note.note
-                                    if(!(keys instanceof Array)){
-                                        keys = [keys]
-                                    }
-                                    for(let i = 0; i < keys.length; i ++){
-                                        let key = keys[i]
-                                        keys[i] = key.substring(0, key.length - 1) + "/" + key[key.length - 1]
-                                    }
-                                    let duration = note.duration
-                                    if(duration.includes("n")){
-                                        duration = duration.substring(0, duration.length - 1)
-                                    }
-                                    notes[notes.length - 1].push(new StaveNote({
-                                        keys : keys, duration : duration
-                                    }))
-                                })
+                                console.log(resp)
+                                if(!(Object.keys(resp).includes("error"))){
+                                    Object.values(resp).forEach(note => {
+                                        let keys = note.note
+                                        if(!(keys instanceof Array)){
+                                            keys = [keys]
+                                        }
+                                        for(let i = 0; i < keys.length; i ++){
+                                            let key = keys[i]
+                                            keys[i] = key.substring(0, key.length - 1) + "/" + key[key.length - 1]
+                                        }
+                                        let duration = note.duration
+                                        if(duration.includes("n")){
+                                            duration = duration.substring(0, duration.length - 1)
+                                        }
+                                        notes[notes.length - 1].push(new StaveNote({
+                                            keys : keys, duration : duration
+                                        }))
+                                    })
+                                }
 
                                 generating = false
                                 e.target.innerHTML = "Generate"
