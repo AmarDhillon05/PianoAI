@@ -1,5 +1,0 @@
-{
-    "rewrites": [
-      { "source": "/musicapi/:path*", "destination": "http://54.173.8.41/:path*" }
-    ]
-  }
