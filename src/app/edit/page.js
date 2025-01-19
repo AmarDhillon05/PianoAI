@@ -1083,34 +1083,42 @@ export default function Edit(){
                         
                         if(!generating){
                             e.target.innerHTML = "Generating..."
-                            
+
                             //Generating notes array
                             let notes_array = []
                             for(let i = 0; i < notes.length; i ++){
                                 let bar = []
                                 notes[i].forEach(item => {
                                     if(item instanceof StaveNote){
-                                        bar.push(JSON.stringify({'keys' : item.getKeys(), 'duration' : item.getDuration()}))
-                                    }else{
-                                        bar.push(JSON.stringify(item))
+                                        let toAdd = JSON.stringify({'keys' : item.getKeys(), 'duration' : item.getDuration()})
+                                        if(item.isRest()){
+                                            toAdd = JSON.stringify({'keys' : item.getKeys(), 'duration' : item.getDuration() + "r"})
+                                        }
+                                        bar.push(toAdd)
                                     }
                                 })
                                 notes_array.push("[" + bar.toString() + "]")
                             }
-                            notes_array = notes_array.toString()
 
                             //Loading notes
                             //Current API is very simple and only generates sequential notes
-                            fetch("/api/generate", {method : "POST"}).then(data => data.json().then(resp => {
+                            fetch("/api/generate", {method : "POST", body: JSON.stringify({'notes' : notes_array})})
+                            .then(data => data.json().then(resp => {
                                 Object.values(resp).forEach(note => {
-                                    let key = note.note.toLowerCase()
-                                    key = key.substring(0, key.length - 1) + "/" + key[key.length - 1]
+                                    let keys = note.note
+                                    if(!(keys instanceof Array)){
+                                        keys = [keys]
+                                    }
+                                    for(let i = 0; i < keys.length; i ++){
+                                        let key = keys[i]
+                                        keys[i] = key.substring(0, key.length - 1) + "/" + key[key.length - 1]
+                                    }
                                     let duration = note.duration
                                     if(duration.includes("n")){
                                         duration = duration.substring(0, duration.length - 1)
                                     }
                                     notes[notes.length - 1].push(new StaveNote({
-                                        keys : [key], duration : duration
+                                        keys : keys, duration : duration
                                     }))
                                 })
 

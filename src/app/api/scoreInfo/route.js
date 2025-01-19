@@ -81,7 +81,6 @@ export async function POST(req) {
         let ok = true
 
         //If the title changed, then throw an error for a bad title
-        console.log(body)
         if(body.oldTitle != body.newTitle){
             
             //First, try to add a new title and break if there's an error
@@ -98,7 +97,6 @@ export async function POST(req) {
 
                 //If we insert the new without error, delete the old
                 if(body.new == false || body.new == "false"){
-                    console.log("Deleting")
                     command = new DeleteItemCommand({
                         TableName: "pianoaiscores", Key : {
                             "id" : {"S" : body.oldTitle}
@@ -148,6 +146,8 @@ export async function POST(req) {
                                 break
                             }
                         }
+
+                        console.log(userScores)
                         if(!found && (body.new == false || body.new == 'false')){
                             return new Response(JSON.stringify({status:400, reason : "Changing name of score failed"}))
                         }
@@ -161,7 +161,6 @@ export async function POST(req) {
 
                         try{
                             let finalResp = await client.send(command)
-                            console.log(finalResp)
                         }
                         catch(err){
                             console.log(err)
@@ -187,7 +186,6 @@ export async function POST(req) {
 
         //Now just
         if(ok){
-            console.log("Updating")
             //Finally updating
             const command = new UpdateItemCommand(
                 {
@@ -198,7 +196,6 @@ export async function POST(req) {
 
             try{
                 const data = await client.send(command)
-                console.log(body.notes)
                 return new Response(JSON.stringify({status:200}))
             }
             catch(err){

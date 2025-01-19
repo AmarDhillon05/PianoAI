@@ -58,8 +58,7 @@ export default function Home() {
             with notes being rendered using Google's <span className = "text-purple-400">Vexflow</span> and played with 
             <span className = "text-purple-400"> Tone.js</span>, storge handled with 
             <span className = "text-purple-400"> DynamoDB</span>, and the generative model being 
-            from <span className = "text-purple-400">HuggingFace.</span> Future plans involve fine-tuning a larger transformer model or 
-            handcrafting a model for more efficient music generation</p>
+            a <span className = "text-purple-400">PyTorch </span> model trained from the MIDI Maestro dataset.</p>
             <img src = "icon2.png" className = "py-4 scale-110 scale-90"></img>
           </div>
 
